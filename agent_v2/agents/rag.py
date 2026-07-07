@@ -9,6 +9,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 
 from agent_v2.llm import llm
 
+
 # ----------------------
 # Paths
 # ----------------------
@@ -16,8 +17,9 @@ from agent_v2.llm import llm
 BASE_DIR = Path(__file__).parent.parent
 
 DB_PATH = BASE_DIR / "chroma_db"
-
 DATA_PATH = BASE_DIR / "data"
+
+
 # ----------------------
 # Embeddings
 # ----------------------
@@ -26,8 +28,16 @@ embeddings = OllamaEmbeddings(
     model="nomic-embed-text"
 )
 
+
 # ----------------------
-# Load PDF
+# Global Vectorstore
+# ----------------------
+
+vectorstore = None
+
+
+# ----------------------
+# Load PDF Documents
 # ----------------------
 
 def load_documents():
@@ -37,9 +47,11 @@ def load_documents():
     pdf_files = list(DATA_PATH.glob("*.pdf"))
 
     if not pdf_files:
-        raise FileNotFoundError("No PDF files found in the data folder.")
+        print("⚠️ No PDF files found in data folder.")
+        return []
 
     for pdf in pdf_files:
+
         print(f"📄 Loading {pdf.name}")
 
         loader = PyPDFLoader(str(pdf))
@@ -47,6 +59,8 @@ def load_documents():
         documents.extend(loader.load())
 
     return documents
+
+
 
 # ----------------------
 # Split Documents
@@ -61,26 +75,49 @@ def split_documents(documents):
 
     return splitter.split_documents(documents)
 
+
+
 # ----------------------
-# Build Vector Store
+# Build / Load Vector Store
 # ----------------------
 
 def get_vectorstore():
 
-    # If Chroma already exists, load it
+    global vectorstore
+
+
+    # Already loaded
+    if vectorstore is not None:
+        return vectorstore
+
+
+    # Load existing Chroma DB
     if os.path.exists(DB_PATH) and os.listdir(DB_PATH):
+
         print("📂 Loading existing Chroma database...")
 
-        return Chroma(
+        vectorstore = Chroma(
             persist_directory=str(DB_PATH),
             embedding_function=embeddings,
         )
 
+        return vectorstore
+
+
+
+    # Create new Chroma DB
     print("📄 Creating new Chroma database...")
+
 
     documents = load_documents()
 
+
+    if not documents:
+        return None
+
+
     chunks = split_documents(documents)
+
 
     vectorstore = Chroma.from_documents(
         documents=chunks,
@@ -88,10 +125,10 @@ def get_vectorstore():
         persist_directory=str(DB_PATH),
     )
 
+
     return vectorstore
 
 
-vectorstore = get_vectorstore()
 
 # ----------------------
 # Retrieval
@@ -99,9 +136,25 @@ vectorstore = get_vectorstore()
 
 def retrieve(query: str):
 
-    docs = vectorstore.similarity_search(query, k=10)
+    store = get_vectorstore()
 
-    return "\n\n".join(doc.page_content for doc in docs)
+
+    if store is None:
+        return "No documents available for retrieval."
+
+
+    docs = store.similarity_search(
+        query,
+        k=10
+    )
+
+
+    return "\n\n".join(
+        doc.page_content
+        for doc in docs
+    )
+
+
 
 # ----------------------
 # RAG Agent
@@ -111,39 +164,47 @@ def rag_agent(state):
 
     question = state["messages"][-1].content
 
+
     context = retrieve(question)
 
+
     messages = [
+
         SystemMessage(
-    content="""
-    You are a RAG assistant.
+            content="""
+You are a RAG assistant.
 
-    Answer ONLY using the provided context.
+Answer ONLY using the provided context.
 
-    Rules:
-    - Never use outside knowledge.
-    - Never make assumptions.
-    - Never infer information that is not explicitly stated.
-    - If the context contains enough information, answer normally.
-    - If the user asks for a summary, summarize ONLY the provided context.
-    - Only say "I don't know." when the context truly does not contain the answer.
-    """
-    ),
+Rules:
+- Never use outside knowledge.
+- Never make assumptions.
+- Never infer information that is not explicitly stated.
+- If the context contains enough information, answer normally.
+- If the user asks for a summary, summarize ONLY the provided context.
+- Only say "I don't know." when the context truly does not contain the answer.
+"""
+        ),
+
+
         HumanMessage(
             content=f"""
 Context:
 
 {context}
 
+
 Question:
 
 {question}
 """
-        ),
+        )
     ]
+
 
     response = llm.invoke(messages)
 
+
     return {
-    "messages": [response]
-}
+        "messages": [response]
+    }
