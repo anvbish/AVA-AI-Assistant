@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+
+.streamlit/
+
+agent_v2/data/
+
+chroma_db/
+vector_db/
+db/
+
+.DS_Store
+Thumbs.db
+
+archives
