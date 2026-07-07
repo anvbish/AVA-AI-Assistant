@@ -39,6 +39,25 @@ st.set_page_config(
     layout="centered",
 )
 
+st.markdown(
+    """
+<style>
+
+div[data-testid="stSpinner"] > div {
+    border-top-color: #ff69b4 !important;
+}
+
+div[data-testid="stSpinner"] p {
+    color: #ff69b4 !important;
+    font-weight: 600;
+}
+
+</style>
+""",
+    unsafe_allow_html=True
+)
+
+
 if "chats" not in st.session_state:
 
     st.session_state.chats = load_chats()
