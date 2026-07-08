@@ -20,27 +20,31 @@ Built as a hands-on exploration of **agentic AI systems**, **LangGraph orchestra
 
 ## 🏗️ Architecture
 
-             User
-              |
-              ↓
-        AVA Interface
-        (Streamlit UI)
-              |
-              ↓
-      Supervisor Agent
-              |
-    -------------------
-    |        |        |
-    ↓        ↓        ↓
- General    RAG    Task Agent
- Agent     Agent
-              |
-              ↓
-      Vector Database
-      (ChromaDB)
-              |
-              ↓
-          LLM Response
+  User
+  │
+  ▼
+Streamlit UI
+  │
+  ▼
+Supervisor / Router
+  │
+  ├────────► Conversation Agent
+  │
+  ├────────► Task Agent
+  │
+  └────────► RAG Agent
+                  │
+                  ▼
+          PDF Documents
+                  │
+                  ▼
+            Chroma Vector DB
+                  │
+                  ▼
+          Shared Ollama LLM
+                  │
+                  ▼
+           Final Response
 
 The **supervisor agent** is the entry point for every query. It decides — based on intent — whether the request needs a conversational reply, a document lookup via RAG, or a task-management action, and routes it to the corresponding specialized agent.
 
