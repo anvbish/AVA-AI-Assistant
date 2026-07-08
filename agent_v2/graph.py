@@ -49,7 +49,7 @@ tools = [
 tool_node = ToolNode(tools)
 llm_with_tools = llm.bind_tools(tools)
 
-router_llm = llm.with_structured_output(Route)
+router_llm = llm
 
 
 # ----------------------
@@ -64,10 +64,18 @@ def get_route(user_message):
         ]
     )
 
-    print(f"Router -> {decision['next']}")
+    route = decision.content.strip().lower()
 
-    return decision["next"]
+    if route not in [
+        "conversation_agent",
+        "task_agent",
+        "rag_agent",
+    ]:
+        route = "conversation_agent"
 
+    print(f"Router -> {route}")
+
+    return route
 def router(state: State):
 
     user_message = state["messages"][-1]

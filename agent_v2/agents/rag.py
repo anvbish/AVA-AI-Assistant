@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from langchain_chroma import Chroma
-from langchain_ollama import OllamaEmbeddings
+from agent_v2.embeddings import embeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -10,35 +10,18 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from agent_v2.llm import llm
 
 
-# ----------------------
-# Paths
-# ----------------------
-
 BASE_DIR = Path(__file__).parent.parent
 
 DB_PATH = BASE_DIR / "chroma_db"
 DATA_PATH = BASE_DIR / "data"
 
 
-# ----------------------
-# Embeddings
-# ----------------------
-
-embeddings = OllamaEmbeddings(
-    model="nomic-embed-text"
-)
 
 
-# ----------------------
-# Global Vectorstore
-# ----------------------
+
 
 vectorstore = None
 
-
-# ----------------------
-# Load PDF Documents
-# ----------------------
 
 def load_documents():
 
@@ -62,10 +45,6 @@ def load_documents():
 
 
 
-# ----------------------
-# Split Documents
-# ----------------------
-
 def split_documents(documents):
 
     splitter = RecursiveCharacterTextSplitter(
@@ -77,9 +56,6 @@ def split_documents(documents):
 
 
 
-# ----------------------
-# Build / Load Vector Store
-# ----------------------
 
 def get_vectorstore():
 
@@ -130,9 +106,6 @@ def get_vectorstore():
 
 
 
-# ----------------------
-# Retrieval
-# ----------------------
 
 def retrieve(query: str):
 
@@ -155,10 +128,6 @@ def retrieve(query: str):
     )
 
 
-
-# ----------------------
-# RAG Agent
-# ----------------------
 
 def rag_agent(state):
 
