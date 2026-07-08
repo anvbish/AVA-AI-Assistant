@@ -23,10 +23,8 @@ Built as a hands-on exploration of **agentic AI systems**, **LangGraph orchestra
 flowchart TD
   User
   │
-  ▼
 Streamlit UI
   │
-  ▼
 Supervisor / Router
   │
   ├────────► Conversation Agent
@@ -35,16 +33,12 @@ Supervisor / Router
   │
   └────────► RAG Agent
                   │
-                  ▼
           PDF Documents
                   │
-                  ▼
             Chroma Vector DB
                   │
-                  ▼
           Shared Ollama LLM
                   │
-                  ▼
            Final Response
 ```
 
