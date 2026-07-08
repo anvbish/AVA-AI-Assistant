@@ -19,7 +19,8 @@ Built as a hands-on exploration of **agentic AI systems**, **LangGraph orchestra
 ---
 
 ## 🏗️ Architecture
-
+```mermaid
+flowchart TD
   User
   │
   ▼
@@ -45,6 +46,7 @@ Supervisor / Router
                   │
                   ▼
            Final Response
+```
 
 The **supervisor agent** is the entry point for every query. It decides — based on intent — whether the request needs a conversational reply, a document lookup via RAG, or a task-management action, and routes it to the corresponding specialized agent.
 
